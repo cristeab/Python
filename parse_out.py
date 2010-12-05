@@ -2,7 +2,9 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime
 
+target_rate = 128 #MB/s
 infile = open("out.log", "r")
 
 values = dict()
@@ -50,11 +52,17 @@ for key in sorted(values.iterkeys()):
 	y_vals.append(values[key])
 	i = i + 1
 
+#filename with current date
+now = datetime.datetime.now()
+filename = "results_" + str(now.day) + str(now.hour) + str(now.minute) + str(now.second) + ".eps"
+
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
+ax.plot([0, i], [target_rate, target_rate], 'r')
 ax.bar(np.arange(i), y_vals)
 plt.ylabel("MB/s")
 ax.set_xticklabels(x_vals)
 fig.autofmt_xdate()
 plt.grid()
-plt.show()
+plt.savefig(filename)
+#plt.show()
