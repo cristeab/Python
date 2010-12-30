@@ -1,3 +1,37 @@
+# File:   pyitpp.py
+# Brief:  Loads an IT++ itfile content and outputs a dictionary with all found variables
+# Author: Bogdan Cristea
+#
+# Usage: from pyitpp import itload
+#        out = itload('fname.it')
+#
+# This module provides a function for loading itfile content into matrices/scalars
+# and outputs all these variables as a dictionary whose keys are variable names.
+# All required functions/classes from python modules (numpy, sys, os, stat, struct)
+# are loaded, be aware about possible name clashes (e.g. mat) 
+#
+# -------------------------------------------------------------------------
+#
+# Copyright (C) 1995-2010  (see AUTHORS file for a list of contributors)
+#
+# This file is part of IT++ - a C++ library of mathematical, signal
+# processing, speech processing, and communications classes and functions.
+#
+# IT++ is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# IT++ is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along
+# with IT++.  If not, see <http://www.gnu.org/licenses/>.
+#
+# -------------------------------------------------------------------------
+
 from sys import exit
 from os import stat
 from os import SEEK_SET
