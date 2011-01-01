@@ -1,5 +1,5 @@
 # File:   pyitpp.py
-# Brief:  Loads an IT++ itfile content and outputs a dictionary with all found variables.
+# Brief:  Loads an IT++ itfile content and outputs a dictionary with all variables found.
 # Author: Bogdan Cristea
 #
 # Usage: from pyitpp import itload
@@ -8,7 +8,7 @@
 # This module provides a function for loading itfile content into matrices/scalars
 # and outputs all these variables as a dictionary whose keys are variable names as
 # found in itfile. This module uses numpy module for matrix operations.
-# Thus the provided functionality is similar to itload() function from MATLAB.
+# Thus, the provided functionality is similar to itload() function for MATLAB.
 #
 # -------------------------------------------------------------------------
 #
@@ -39,7 +39,7 @@ from stat import ST_SIZE
 from struct import unpack
 from numpy import mat
 from numpy import reshape
-from numpy import zeros
+from numpy.matlib import zeros
 
 def __fgetstr(fid):
     str = ''
@@ -83,7 +83,7 @@ def itload(in_file):
         pos = f.tell()
         
         #read header, data, and total block sizes (3*uint64)
-        header_data_block_sizes = unpack('LLL', f.read(24))
+        header_data_block_sizes = unpack('3Q', f.read(24))
         
         #read current variable name
         var_name = __fgetstr(f)
@@ -125,60 +125,106 @@ def itload(in_file):
         #vectors
         # --- bvec ---
         elif 'bvec' == var_type:
-            length = unpack('L', f.read(8))[0]
+            length = unpack('Q', f.read(8))[0]
             fmt = str(length)+'b'
             out[var_name] = mat(unpack(fmt, f.read(length)), 'uint8').T#convert to a column vector
         # --- string ---
         elif 'string' == var_type:
-            length = unpack('L', f.read(8))[0]
+            length = unpack('Q', f.read(8))[0]
             fmt = str(length)+'c'
             out[var_name] = "".join(unpack(fmt, f.read(length)))
         # --- svec ---
         elif 'svec' == var_type:
-            length = unpack('L', f.read(8))[0]
+            length = unpack('Q', f.read(8))[0]
             fmt = str(length)+'h'
             out[var_name] = mat(unpack(fmt, f.read(length*2)), 'int16').T#convert to a column vector
         # --- ivec ---
         elif 'ivec' == var_type:
-            length = unpack('L', f.read(8))[0]
+            length = unpack('Q', f.read(8))[0]
             fmt = str(length)+'i'
             out[var_name] = mat(unpack(fmt, f.read(length*4)), 'int32').T#convert to a column vector
         # --- fvec ---
         elif 'fvec' == var_type:
-            length = unpack('L', f.read(8))[0]
+            length = unpack('Q', f.read(8))[0]
             fmt = str(length)+'f'
             out[var_name] = mat(unpack(fmt, f.read(length*4)), 'float32').T#convert to a column vector
         # --- dvec ---
         elif 'dvec' == var_type:
-            length = unpack('L', f.read(8))[0]
+            length = unpack('Q', f.read(8))[0]
             fmt = str(length)+'d'
             out[var_name] = mat(unpack(fmt, f.read(length*8)), 'float64').T#convert to a column vector
         # --- fcvec ---
         elif 'fcvec' == var_type:
-            length = unpack('L', f.read(8))[0]
+            length = unpack('Q', f.read(8))[0]
             fmt = str(2*length)+'f'
             real_imag = mat(unpack(fmt, f.read(2*length*4)), 'float32').T#convert to a column vector
-            out[var_name] = zeros((length, 1));
+            out[var_name] = zeros((length, 1), complex)
             for i in range(length):
                 out[var_name][i,0] = complex(real_imag[2*i], real_imag[2*i+1])
         # --- dcvec ---
         elif 'dcvec' == var_type:
-            length = unpack('L', f.read(8))[0]
+            length = unpack('Q', f.read(8))[0]
             fmt = str(2*length)+'d'
             real_imag = mat(unpack(fmt, f.read(2*length*8)), 'float64').T#convert to a column vector
-            out[var_name] = zeros((length, 1), complex);
+            out[var_name] = zeros((length, 1), complex)
             for i in range(length):
-                out[var_name][i,0] = complex(real_imag[2*i], real_imag[2*i+1])        
+                out[var_name][i,0] = complex(real_imag[2*i], real_imag[2*i+1])       
         
         #matrices
+        # --- bmat ---
+        elif 'bmat' == var_type:
+            rows = unpack('Q', f.read(8))[0]
+            cols = unpack('Q', f.read(8))[0]
+            fmt = str(rows*cols)+'b'
+            out[var_name] = reshape(mat(unpack(fmt, f.read(rows*cols)), 'uint8'), (cols, rows)).T
+        # --- smat ---
+        elif 'smat' == var_type:
+            rows = unpack('Q', f.read(8))[0]
+            cols = unpack('Q', f.read(8))[0]
+            fmt = str(rows*cols)+'h'
+            out[var_name] = reshape(mat(unpack(fmt, f.read(rows*cols*2)), 'int16'), (cols, rows)).T
+        # --- imat ---
+        elif 'imat' == var_type:
+            rows = unpack('Q', f.read(8))[0]
+            cols = unpack('Q', f.read(8))[0]
+            fmt = str(rows*cols)+'i'
+            out[var_name] = reshape(mat(unpack(fmt, f.read(rows*cols*4)), 'int32'), (cols, rows)).T
+        # --- fmat ---
+        elif 'fmat' == var_type:
+            rows = unpack('Q', f.read(8))[0]
+            cols = unpack('Q', f.read(8))[0]
+            fmt = str(rows*cols)+'f'
+            out[var_name] = reshape(mat(unpack(fmt, f.read(rows*cols*4)), 'float32'), (cols, rows)).T
+        # --- dmat ---
         elif 'dmat' == var_type:
-            rows = unpack('L', f.read(8))[0]
-            cols = unpack('L', f.read(8))[0]
+            rows = unpack('Q', f.read(8))[0]
+            cols = unpack('Q', f.read(8))[0]
             fmt = str(rows*cols)+'d'
             out[var_name] = reshape(mat(unpack(fmt, f.read(rows*cols*8)), 'float64'), (cols, rows)).T
+        # --- fcmat ---
+        elif 'fcmat' == var_type:
+            rows = unpack('Q', f.read(8))[0]
+            cols = unpack('Q', f.read(8))[0]
+            fmt = str(2*rows*cols)+'f'
+            real_imag = mat(unpack(fmt, f.read(2*rows*cols*4)), 'float32').T
+            out[var_name] = zeros((rows, cols), complex)
+            for i in range(rows):
+                for j in range(cols):
+                    out[var_name] = out[var_name][i,j] = complex(real_imag[2*i+2*rows*j], real_imag[2*i+1+2*rows*j])
+        # --- dcmat ---
+        elif 'dcmat' == var_type:
+            rows = unpack('Q', f.read(8))[0]
+            cols = unpack('Q', f.read(8))[0]
+            fmt = str(2*rows*cols)+'d'
+            real_imag = mat(unpack(fmt, f.read(2*rows*cols*8)), 'float64').T
+            out[var_name] = zeros((rows, cols), complex)
+            for i in range(rows):
+                for j in range(cols):
+                    out[var_name][i,j] = complex(real_imag[2*i+2*rows*j], real_imag[2*i+1+2*rows*j])
+
         else:
             print 'Not a supported type: ', var_type
-    
+
         if pos+header_data_block_sizes[2] >= file_size:
             break
         else:
