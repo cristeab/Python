@@ -41,6 +41,15 @@ from numpy import mat
 from numpy import reshape
 from numpy.matlib import zeros
 
+#numerical types used for conversion
+from numpy import uint8
+from numpy import int16
+from numpy import int32
+from numpy import float32
+from numpy import float64
+from numpy import complex64
+from numpy import complex128
+
 def __fgetstr(fid):
     str = ''
     while 1:
@@ -97,30 +106,30 @@ def itload(in_file):
         #scalars
         # --- bin ---
         elif 'bin' == var_type:
-            out[var_name] = unpack('b', f.read(1))[0]
+            out[var_name] = uint8(unpack('b', f.read(1))[0])
         # --- int8 (char) ---
         elif 'int8' == var_type:
             out[var_name] = unpack('c', f.read(1))[0]
         # --- int16 (short) ---
         elif 'int16' == var_type:
-            out[var_name] = unpack('h', f.read(2))[0]
+            out[var_name] = int16(unpack('h', f.read(2))[0])
         # --- int32 (int) ---
         elif 'int32' == var_type:
-            out[var_name] = unpack('i', f.read(4))[0]
+            out[var_name] = int32(unpack('i', f.read(4))[0])
         # --- float32 (float) ---
         elif 'float32' == var_type:
-            out[var_name] = unpack('f', f.read(4))[0]
+            out[var_name] = float32(unpack('f', f.read(4))[0])
         # --- float64 (double) ---
         elif 'float64' == var_type:
-            out[var_name] = unpack('d', f.read(8))[0]
+            out[var_name] = float64(unpack('d', f.read(8))[0])
         # --- cfloat32 (complex<float>) ---
         elif 'cfloat32' == var_type:
             real_imag = unpack('2f', f.read(8))
-            out[var_name] = complex(real_imag[0], real_imag[1])
+            out[var_name] = complex64(complex(real_imag[0], real_imag[1]))
         # --- cfloat64 (complex<double>) ---
         elif 'cfloat64' == var_type:
             real_imag = unpack('2d', f.read(16))
-            out[var_name] = complex(real_imag[0], real_imag[1])
+            out[var_name] = complex128(complex(real_imag[0], real_imag[1]))
         
         #vectors
         # --- bvec ---
@@ -160,7 +169,7 @@ def itload(in_file):
             real_imag = mat(unpack(fmt, f.read(2*length*4)), 'float32').T#convert to a column vector
             out[var_name] = zeros((length, 1), complex)
             for i in range(length):
-                out[var_name][i,0] = complex(real_imag[2*i], real_imag[2*i+1])
+                out[var_name][i,0] = complex64(complex(real_imag[2*i], real_imag[2*i+1]))
         # --- dcvec ---
         elif 'dcvec' == var_type:
             length = unpack('Q', f.read(8))[0]
@@ -168,7 +177,7 @@ def itload(in_file):
             real_imag = mat(unpack(fmt, f.read(2*length*8)), 'float64').T#convert to a column vector
             out[var_name] = zeros((length, 1), complex)
             for i in range(length):
-                out[var_name][i,0] = complex(real_imag[2*i], real_imag[2*i+1])       
+                out[var_name][i,0] = complex128(complex(real_imag[2*i], real_imag[2*i+1]))       
         
         #matrices
         # --- bmat ---
@@ -222,6 +231,155 @@ def itload(in_file):
                 for j in range(cols):
                     out[var_name][i,j] = complex(real_imag[2*i+2*rows*j], real_imag[2*i+1+2*rows*j])
 
+        #arrays of scalars (implemented as list of scalars)
+        # --- bArray ---
+        elif 'bArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            fmt = str(size)+'b'
+            out[var_name] = [uint8(n) for n in unpack(fmt, f.read(size))]
+        # --- sArray ---
+        elif 'sArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            fmt = str(size)+'h'
+            out[var_name] = [int16(n) for n in unpack(fmt, f.read(size*2))]
+        # --- iArray ---
+        elif 'iArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            fmt = str(size)+'i'
+            out[var_name] = [int32(n) for n in unpack(fmt, f.read(size*4))]
+        # --- fArray ---
+        elif 'fArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            fmt = str(size)+'f'
+            out[var_name] = [float32(n) for n in unpack(fmt, f.read(size*4))]
+        # --- dArray ---
+        elif 'dArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            fmt = str(size)+'d'
+            out[var_name] = [float64(n) for n in unpack(fmt, f.read(size*8))]
+        # --- fcArray ---
+        elif 'fcArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            fmt = str(2*size)+'f'
+            real_imag = unpack(fmt, f.read(2*size*4))
+            out[var_name] = list()
+            for i in range(size):
+                out[var_name].append(complex64(complex(real_imag[2*i], real_imag[2*i+1])))
+        # --- dcArray ---
+        elif 'dcArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            fmt = str(2*size)+'d'
+            real_imag = unpack(fmt, f.read(2*size*8))
+            out[var_name] = list()
+            for i in range(size):
+                out[var_name].append(complex128(complex(real_imag[2*i], real_imag[2*i+1])))
+        
+        #arrays of vectors (implemented as list of vectors)
+        # --- bvecArray ---
+        elif 'bvecArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                length = unpack('Q', f.read(8))[0]
+                fmt = str(length)+'b'
+                out[var_name].append(mat(unpack(fmt, f.read(length)), 'uint8').T)
+        # --- svecArray ---
+        elif 'svecArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                length = unpack('Q', f.read(8))[0]
+                fmt = str(length)+'h'
+                out[var_name].append(mat(unpack(fmt, f.read(length*2)), 'int16').T)
+        # --- ivecArray ---
+        elif 'ivecArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                length = unpack('Q', f.read(8))[0]
+                fmt = str(length)+'i'
+                out[var_name].append(mat(unpack(fmt, f.read(length*4)), 'int32').T)
+        # --- vecArray ---
+        elif 'vecArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                length = unpack('Q', f.read(8))[0]
+                fmt = str(length)+'d'
+                out[var_name].append(mat(unpack(fmt, f.read(length*8)), 'float64').T)
+        # --- cvecArray ---
+        elif 'cvecArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                length = unpack('Q', f.read(8))[0]
+                fmt = str(2*length)+'d'
+                real_imag = unpack(fmt, f.read(2*length*8))
+                v = zeros((length, 1), complex)
+                for j in range(length):
+                    v[j,0] = complex128(complex(real_imag[2*j], real_imag[2*j+1]))
+                out[var_name].append(v)
+        #   --- stringArray ---
+        elif 'stringArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                length = unpack('Q', f.read(8))[0]
+                fmt = str(length)+'c'
+                out[var_name].append("".join(unpack(fmt, f.read(length))))        
+
+        #arrays of matrices (implemented as list of matrices)
+        # --- bmatArray ---
+        elif 'bmatArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                rows = unpack('Q', f.read(8))[0]
+                cols = unpack('Q', f.read(8))[0]
+                fmt = str(rows*cols)+'b'
+                out[var_name].append(reshape(mat(unpack(fmt, f.read(rows*cols)), 'uint8'), (cols, rows)).T)
+        # --- smatArray ---
+        elif 'smatArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                rows = unpack('Q', f.read(8))[0]
+                cols = unpack('Q', f.read(8))[0]
+                fmt = str(rows*cols)+'h'
+                out[var_name].append(reshape(mat(unpack(fmt, f.read(rows*cols*2)), 'int16'), (cols, rows)).T)
+        # --- imatArray ---
+        elif 'imatArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                rows = unpack('Q', f.read(8))[0]
+                cols = unpack('Q', f.read(8))[0]
+                fmt = str(rows*cols)+'i'
+                out[var_name].append(reshape(mat(unpack(fmt, f.read(rows*cols*4)), 'int32'), (cols, rows)).T)
+        # --- matArray ---
+        elif 'matArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                rows = unpack('Q', f.read(8))[0]
+                cols = unpack('Q', f.read(8))[0]
+                fmt = str(rows*cols)+'d'
+                out[var_name].append(reshape(mat(unpack(fmt, f.read(rows*cols*8)), 'float64'), (cols, rows)).T)
+        # --- cmatArray ---
+        elif 'cmatArray' == var_type:
+            size = unpack('Q', f.read(8))[0]
+            out[var_name] = list()
+            for i in range(size):
+                rows = unpack('Q', f.read(8))[0]
+                cols = unpack('Q', f.read(8))[0]
+                fmt = str(2*rows*cols)+'d'
+                real_imag = unpack(fmt, f.read(2*rows*cols*8))
+                m = zeros((rows, cols), complex)
+                for j in range(rows):
+                    for k in range(cols):
+                        m[j,k] = complex128(complex(real_imag[2*j+2*rows*k], real_imag[2*j+1+2*rows*k]))
+                out[var_name].append(m)    
+        
         else:
             print 'Not a supported type: ', var_type
 
