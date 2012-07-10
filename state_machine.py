@@ -37,9 +37,7 @@ def detectShake(iX, iY, iZ):
         MachineState = 3
     elif 1 == MachineState:
         #wait after detecting a shake
-        if (-1 == TimeStartWindowMs[ShakeAxis-1]):
-            TimeStartWindowMs[ShakeAxis-1] = get_time_ms()
-        elif ((get_time_ms() - TimeStartWindowMs[ShakeAxis-1]) >= DeadTimeWindowMs):
+        if ((get_time_ms() - TimeStartWindowMs[ShakeAxis-1]) >= DeadTimeWindowMs):
             MachineState = 0
     elif 2 == MachineState:
         #threshold reached
@@ -53,7 +51,10 @@ def detectShake(iX, iY, iZ):
                 MachineState = 0
             elif FlagThresholdCount[ShakeAxis-1] >= ShakeOscillationCountParameter:
                 ShakeGestureFlag = 1
+                TimeStartWindowMs[ShakeAxis-1] = get_time_ms()#prepare for the wait
                 MachineState = 1
+            else:
+                FlagPositive[ShakeAxis-1] = CurFlagPositive[ShakeAxis-1]
     elif 3 == MachineState:
         #search threshold
         if (fabs(iX) > ShakeAmplitudeThreshold):
