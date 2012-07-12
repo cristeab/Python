@@ -50,18 +50,34 @@ def detectShake(iX, iY, iZ):
     global CurFlagPositive
     #output
     ShakeGestureFlag = 0
-    if (0 == MachineState):
-        #reset state machine
-        print "reset"
-        FlagThresholdCount = [0, 0, 0]
-        TimeStartWindowMs = [-1, -1, -1]
-        MachineState = 3
-    elif (1 == MachineState):
+    #state machine
+    if (1 == MachineState):
         #wait after detecting a shake
         print "wait"
         if ((get_time_ms() - TimeStartWindowMs[ShakeAxis-1]) >= DeadTimeWindowMs):
             MachineState = 0
-    elif (2 == MachineState):
+    if (3 == MachineState):
+       #search for a threshold cross
+        print "search"
+        if (fabs(iX) >= ShakeAmplitudeThreshold) and (fabs(PrevSample[0]) < ShakeAmplitudeThreshold):
+            CurFlagPositive[0] = fabs(iX)/iX
+            ShakeAxis = 1
+            MachineState = 2
+            print PrevSample[0], iX
+        elif (fabs(iY) >= ShakeAmplitudeThreshold) and (fabs(PrevSample[1]) < ShakeAmplitudeThreshold):
+            CurFlagPositive[1] = fabs(iY)/iY
+            ShakeAxis = 2
+            MachineState = 2
+            print PrevSample[1], iX
+        elif (fabs(iZ) >= ShakeAmplitudeThreshold) and (fabs(PrevSample[2]) < ShakeAmplitudeThreshold):
+            CurFlagPositive[2] = fabs(iZ)/iZ
+            ShakeAxis = 3
+            MachineState = 2
+            print PrevSample[2], iX
+        PrevSample[0] = iX
+        PrevSample[1] = iY
+        PrevSample[2] = iZ
+    if (2 == MachineState):
         #threshold reached
         print "threshold cross", ShakeAxis-1
         FlagThresholdCount[ShakeAxis-1] = FlagThresholdCount[ShakeAxis-1]+1
@@ -84,30 +100,12 @@ def detectShake(iX, iY, iZ):
                 MachineState = 1
             else:
                 FlagPositive[ShakeAxis-1] = CurFlagPositive[ShakeAxis-1]
-    elif (3 == MachineState):
-        #search for a threshold cross
-        print "search"
-        if (fabs(iX) >= ShakeAmplitudeThreshold) and (fabs(PrevSample[0]) < ShakeAmplitudeThreshold):
-            CurFlagPositive[0] = fabs(iX)/iX
-            ShakeAxis = 1
-            MachineState = 2
-            print PrevSample[0], iX
-        elif (fabs(iY) >= ShakeAmplitudeThreshold) and (fabs(PrevSample[1]) < ShakeAmplitudeThreshold):
-            CurFlagPositive[1] = fabs(iY)/iY
-            ShakeAxis = 2
-            MachineState = 2
-            print PrevSample[1], iX
-        elif (fabs(iZ) >= ShakeAmplitudeThreshold) and (fabs(PrevSample[2]) < ShakeAmplitudeThreshold):
-            CurFlagPositive[2] = fabs(iZ)/iZ
-            ShakeAxis = 3
-            MachineState = 2
-            print PrevSample[2], iX
-        PrevSample[0] = iX
-        PrevSample[1] = iY
-        PrevSample[2] = iZ
-    else:
-        print "unknown state, reseting state machine"
-        MachineState = 0
+    if (0 == MachineState):
+        #reset state machine
+        print "reset"
+        FlagThresholdCount = [0, 0, 0]
+        TimeStartWindowMs = [-1, -1, -1]
+        MachineState = 3
 
     return (ShakeGestureFlag, ShakeAxis)
 
