@@ -20,13 +20,26 @@ for i in range(0, N):
 #reference filter
 if 0 == out['type']:
     filt_type = 'low'
+    Wn = float(out['fc'])/(out['fs']/2.0)
 elif 1 == out['type']:
     filt_type = 'high'
+    Wn = float(out['fc'])/(out['fs']/2.0)
+elif 2 == out['type']:
+    filt_type = 'bandpass'
+    Wn = [float(out['fl'])/(out['fs']/2.0), float(out['fh'])/(out['fs']/2.0)]
 else:
-    filt_type = ''
-[B, A] = butter(out['order'], float(out['fc'])/(out['fs']/2.0), btype=filt_type)
+    print 'unknown filter type'
+    filt_type = 'none'
+
+[B, A] = butter(out['order'], Wn, btype=filt_type)
 filt_signal = lfilter(B, A, in_sig, axis=0)
 ref_fft_sig = fft.fft(filt_signal, N)
+
+print 'order =', out['order']
+print 'Wn =', Wn
+print ' ', 'A', 'B'
+for i in range(0, len(A)):
+    print i, A[i], B[i]
 
 figure(0)
 plot(freq[0:N/2], abs(fft_sig)[0:N/2], 'b', label='C - abs')
