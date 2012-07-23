@@ -18,20 +18,21 @@ for i in range(0, N):
     freq.append((i*2*pi/N)/(2*pi))
 
 #reference filter
-if 0 == out['type']:
+order = int(out['order'])
+if 0 == int(out['type']):
     filt_type = 'low'
-    Wn = float(out['fc'])/(out['fs']/2.0)
-elif 1 == out['type']:
+    Wn = float(out['fc'])/(float(out['fs'])/2.0)
+elif 1 == int(out['type']):
     filt_type = 'high'
-    Wn = float(out['fc'])/(out['fs']/2.0)
-elif 2 == out['type']:
+    Wn = float(out['fc'])/(float(out['fs'])/2.0)
+elif 2 == int(out['type']):
     filt_type = 'bandpass'
-    Wn = [float(out['fl'])/(out['fs']/2.0), float(out['fh'])/(out['fs']/2.0)]
+    Wn = [float(out['fl'])/(float(out['fs'])/2.0), float(out['fh'])/(float(out['fs'])/2.0)]
 else:
     print 'unknown filter type'
     filt_type = 'none'
 
-[B, A] = butter(out['order'], Wn, btype=filt_type)
+[B, A] = butter(order, Wn, btype=filt_type)
 filt_signal = lfilter(B, A, in_sig, axis=0)
 ref_fft_sig = fft.fft(filt_signal, N)
 
