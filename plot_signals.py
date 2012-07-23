@@ -20,23 +20,27 @@ for i in range(0, N):
 #reference filter
 order = int(out['order'])
 if 0 == int(out['type']):
-    filt_type = 'low'
+    filt_type = 'lowpass'
     Wn = float(out['fc'])/(float(out['fs'])/2.0)
 elif 1 == int(out['type']):
-    filt_type = 'high'
+    filt_type = 'highpass'
     Wn = float(out['fc'])/(float(out['fs'])/2.0)
 elif 2 == int(out['type']):
     filt_type = 'bandpass'
+    Wn = [float(out['fl'])/(float(out['fs'])/2.0), float(out['fh'])/(float(out['fs'])/2.0)]
+elif 3 == int(out['type']):
+    filt_type = 'bandstop'
     Wn = [float(out['fl'])/(float(out['fs'])/2.0), float(out['fh'])/(float(out['fs'])/2.0)]
 else:
     print 'unknown filter type'
     filt_type = 'none'
 
+#generate filter
 [B, A] = butter(order, Wn, btype=filt_type)
 filt_signal = lfilter(B, A, in_sig, axis=0)
 ref_fft_sig = fft.fft(filt_signal, N)
 
-print 'order =', out['order']
+print 'order =', order
 print 'Wn =', Wn
 print ' ', 'A', 'B'
 for i in range(0, len(A)):
