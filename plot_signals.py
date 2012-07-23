@@ -54,4 +54,13 @@ plot(freq[0:N/2], abs(ref_fft_sig)[0:N/2], 'b--', label='P - abs')
 plot(freq[0:N/2], angle(ref_fft_sig)[N/2:N]/(2*pi), 'g--', label='P - angle')
 grid()
 legend()
+title('Amplitude and phase of the FFT of the output signal')
+
+figure(1)
+plot(in_sig, label='input')
+plot(sig, 'r', label='output')
+grid()
+legend()
+title('Input and output signal')
+
 show()
