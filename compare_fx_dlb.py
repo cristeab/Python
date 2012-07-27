@@ -7,12 +7,14 @@ from scipy.signal import butter, lfilter
 from numpy import *
 from math import pi
 
-out = itload('testFilt.it')
+Q_FACTOR = 20
+out = itload('testFilt_'+str(Q_FACTOR)+'.it')
 
 norm_freq = float(out['norm_freq'])
 norm_freq_h = float(out['norm_freq_h'])
 length = int(out['length'])
 in_sig = array(out['pSignal'])[:,0].tolist()
+fx_in_sig = array(out['pFxSignal'])[:,0].tolist()
 N = 1024
 order = 2
 
@@ -44,7 +46,7 @@ plot(freq[0:N/2], abs(ref_fft_sig)[0:N/2], 'b--', label='ref - amp')
 plot(freq[0:N/2], angle(ref_fft_sig)[N/2:N]/(2*pi), 'g--', label='ref - angle')
 legend()
 grid()
-title('Lowpass')
+title('Lowpass with Q'+str(Q_FACTOR))
 
 #compare output with reference
 def get_error(ref_filt_sig, filt_sig):
@@ -78,7 +80,7 @@ plot(freq[0:N/2], abs(ref_fft_sig)[0:N/2], 'b--', label='ref - amp')
 plot(freq[0:N/2], angle(ref_fft_sig)[N/2:N]/(2*pi), 'g--', label='ref - angle')
 legend()
 grid()
-title('Highpass')
+title('Highpass with Q'+str(Q_FACTOR))
 
 figure(4)
 plot(get_error(ref_filt_sig, filt_sig), label='highpass')
@@ -105,7 +107,7 @@ plot(freq[0:N/2], abs(ref_fft_sig)[0:N/2], 'b--', label='ref - amp')
 plot(freq[0:N/2], angle(ref_fft_sig)[N/2:N]/(2*pi), 'g--', label='ref - angle')
 legend()
 grid()
-title('Bandpass')
+title('Bandpass with Q'+str(Q_FACTOR))
 
 figure(4)
 plot(get_error(ref_filt_sig, filt_sig), label='bandpass')
@@ -132,12 +134,16 @@ plot(freq[0:N/2], abs(ref_fft_sig)[0:N/2], 'b--', label='ref - amp')
 plot(freq[0:N/2], angle(ref_fft_sig)[N/2:N]/(2*pi), 'g--', label='ref - angle')
 legend()
 grid()
-title('Bandstop')
+title('Bandstop with Q'+str(Q_FACTOR))
 
 figure(4)
 plot(get_error(ref_filt_sig, filt_sig), label='bandstop')
 legend()
 grid()
-title('Output error')
+title('Output error with Q'+str(Q_FACTOR))
+
+figure(5)
+plot(in_sig, 'b')
+plot(fx_in_sig, 'g')
 
 show()
