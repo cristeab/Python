@@ -7,7 +7,11 @@
 #
 # This module provides a function for loading itfile content into matrices/scalars
 # and outputs all these variables as a dictionary whose keys are variable names as
+<<<<<<< HEAD
 # found in itfile. This module uses numpy module for matrix operations and numerical types.
+=======
+# found in itfile. This module uses numpy module for matrix operations.
+>>>>>>> bff1c1cad87bea09aefbef83a9aa478523e86b05
 # Thus, the provided functionality is similar to itload() function for MATLAB.
 #
 # -------------------------------------------------------------------------
@@ -41,7 +45,11 @@ from numpy import mat
 from numpy import reshape
 from numpy.matlib import zeros
 
+<<<<<<< HEAD
 #numerical types used for conversions
+=======
+#numerical types used for conversion
+>>>>>>> bff1c1cad87bea09aefbef83a9aa478523e86b05
 from numpy import uint8
 from numpy import int16
 from numpy import int32
